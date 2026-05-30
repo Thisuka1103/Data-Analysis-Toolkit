@@ -74,11 +74,14 @@ class DataInspector:
         print(f"✅ Loaded '{path}': {self.df.shape[0]} rows × {self.df.shape[1]} columns")
 
     def _auto_type_correction(self) -> None:
-        """Force-convert columns to numeric where possible without going all-null."""
+        """
+        Safely converts object columns to numeric. 
+        Only applies the conversion if it results in zero data loss.
+        """
         for col in self.df.columns:
             if self.df[col].dtype == object:
                 converted = pd.to_numeric(self.df[col], errors="coerce")
-                if converted.notna().sum() > 0:
+                if converted.isna().sum() == self.df[col].isna().sum():
                     self.df[col] = converted
 
     def _split_column_types(self) -> None:
