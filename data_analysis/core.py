@@ -35,18 +35,14 @@ class DataInspector:
         self.normalized_data_df = pd.DataFrame()
         self.numeric_normalized_df = pd.DataFrame()
 
-    def upload_data(self):
-    # Strings that should be treated as missing values
+        # Strings treated as missing
     _GARBAGE = {"?", "n/a", "na", "null", "none", "", " ", "nan", "N/A", "NULL", "None"}
+
     def upload_data(self) -> None:
         """
-        Prompts user to upload a CSV, handles common null strings,
-        and attempts to auto-convert columns to their correct numeric types.
         Upload a CSV file from your local machine inside Google Colab.
         Automatically handles garbage strings and attempts type correction.
         """
-        uploaded_files = files.upload()
-        if not uploaded_files:
         from google.colab import files
         uploaded = files.upload()
         if not uploaded:
@@ -62,29 +58,12 @@ class DataInspector:
         self._auto_type_correction()
         self._split_column_types()
         print(f"✅ Loaded '{filename}': {self.df.shape[0]} rows × {self.df.shape[1]} columns")
-        filename = list(uploaded_files.keys())[0]
-        file_bytes = uploaded_files[filename]
-        null_indicators = ['?', 'n/a', 'N/A', 'NULL', 'null', ' ']
-        
-        self.df = pd.read_csv(io.BytesIO(file_bytes), na_values=null_indicators)
-        self.df['count'] = 1
-        for column in self.df.columns:
-            converted_series = pd.to_numeric(self.df[column], errors='coerce')
-            if not converted_series.isna().all():
-                self.df[column] = converted_series
-        print(f"\n✅ File '{filename}' loaded and types sanitized!")
-    def load_from_path(self, path: str):
+
     def load_from_path(self, path: str) -> None:
         """
-        Loads data from a given URL or local file path, handles common null strings,
-        and attempts to auto-convert columns to their correct numeric types.
         Load a CSV directly from a file path (e.g. a Colab sample dataset).
         Automatically handles garbage strings and type correction.
         """
-        null_indicators = ['?', 'n/a', 'N/A', 'NULL', 'null', ' ']
-        try:
-            self.df = pd.read_csv(path, na_values=null_indicators)
-            self.df['count'] = 1
         self.df = pd.read_csv(
             path,
             na_values=list(self._GARBAGE),
@@ -93,10 +72,7 @@ class DataInspector:
         self._auto_type_correction()
         self._split_column_types()
         print(f"✅ Loaded '{path}': {self.df.shape[0]} rows × {self.df.shape[1]} columns")
-            for column in self.df.columns:
-                converted_series = pd.to_numeric(self.df[column], errors='coerce')
-                if not converted_series.isna().all():
-                    self.df[column] = converted_series
+
     def _auto_type_correction(self) -> None:
         """Force-convert columns to numeric where possible without going all-null."""
         for col in self.df.columns:
@@ -104,16 +80,13 @@ class DataInspector:
                 converted = pd.to_numeric(self.df[col], errors="coerce")
                 if converted.notna().sum() > 0:
                     self.df[col] = converted
-                    
+
     def _split_column_types(self) -> None:
         """Separate numeric and categorical columns into dedicated DataFrames."""
         num_cols = self.df.select_dtypes(include=np.number).columns.tolist()
         cat_cols = self.df.select_dtypes(exclude=np.number).columns.tolist()
         self.numeric_df = self.df[num_cols].copy()
         self.categorical_df = self.df[cat_cols].copy()
-            print(f"\n✅ Data loaded successfully from '{path}' and types sanitized!")
-        except Exception as e:
-            print(f"❌ Error loading data from path: {e}")
 
     def get_summary(self):
         """
