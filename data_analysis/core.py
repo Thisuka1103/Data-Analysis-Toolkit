@@ -18,14 +18,17 @@ import inspect
 import base64
 from IPython.display import display
 
-# Custom Color Palettes Extracted from Provided Images
-CUSTOM_PALETTE = [
-    '#DC3C18', '#26415E', '#E29240', '#CA033E', '#83A6CE', 
-    '#91811F', '#C48CB3', '#0D1E4C', '#EF6719', '#6E3A38',
-    '#7A0025', '#990926', '#E5C9D7', '#0B1B32', '#F7E3DA', '#C89987', '#320404'
-]
+# Distinct Color Palettes Extracted from Provided Images
+PALETTE_EARTH = ['#91811F', '#E29240', '#C89987', '#6E3A38', '#320404', '#F7E3DA']
+PALETTE_WARM = ['#CA033E', '#DC3C18', '#EF6719', '#990926', '#7A0025']
+PALETTE_COOL = ['#0D1E4C', '#26415E', '#83A6CE', '#C48CB3', '#E5C9D7', '#0B1B32']
+PALETTE_BLUES = ['#1B3B66', '#295B94', '#5D95C9', '#C1E6F7']
+PALETTE_PINKS = ['#CE366A', '#FB4E88', '#FFABC7', '#FFF5FA']
+PALETTE_MIXED = ['#26415E', '#E29240', '#CA033E', '#83A6CE', '#91811F']
 
-CUSTOM_CONTINUOUS = ['#0D1E4C', '#26415E', '#83A6CE', '#E5C9D7', '#C48CB3', '#CA033E']
+CONTINUOUS_COOL = ['#0B1B32', '#0D1E4C', '#26415E', '#83A6CE', '#C1E6F7']
+CONTINUOUS_WARM = ['#7A0025', '#CA033E', '#DC3C18', '#E29240', '#F7E3DA']
+CONTINUOUS_MIXED = ['#0D1E4C', '#26415E', '#83A6CE', '#E5C9D7', '#C48CB3', '#CA033E']
 
 class DataInspector:
     """
@@ -439,18 +442,18 @@ class DataInspector:
 
             figure.add_trace(
                 go.Violin(x=self.df[c], box_visible=True, meanline_visible=True,
-                        name=c, orientation='h', line_color=CUSTOM_PALETTE[0]),
+                        name=c, orientation='h', line_color=PALETTE_EARTH[0]),
                 row=1, col=1
             )
 
             figure.add_trace(
                 go.Scatter(y=self.df[c], mode='markers',
-                        marker=dict(opacity=0.5, color=CUSTOM_PALETTE[1]), name=c),
+                        marker=dict(opacity=0.5, color=PALETTE_EARTH[1]), name=c),
                 row=1, col=2
             )
 
             figure.add_trace(
-                go.Histogram(x=self.df[c], name=c, marker_color=CUSTOM_PALETTE[2]),
+                go.Histogram(x=self.df[c], name=c, marker_color=PALETTE_EARTH[2]),
                 row=1, col=3
             )
 
@@ -482,7 +485,7 @@ class DataInspector:
             freq_df['percentage'] = (freq_df['count'] / freq_df['count'].sum() * 100).round(1).astype(str) + '%'
 
             figure = px.bar(freq_df, x=c, y='count', text='percentage',
-                         title=f"Frequency: {c}", color=c, color_discrete_sequence=CUSTOM_PALETTE)
+                         title=f"Frequency: {c}", color=c, color_discrete_sequence=PALETTE_COOL)
             figure.show()
 
     def handle_outliers(self, columns=None, find_and_delete=False):
@@ -528,12 +531,12 @@ class DataInspector:
         c2_is_num = pd.api.types.is_numeric_dtype(self.df[col2])
 
         if c1_is_num and c2_is_num:
-            figure = px.scatter(self.df, x=col1, y=col2, trendline="ols", title=f"Correlation: {col1} vs {col2}", color_discrete_sequence=CUSTOM_PALETTE)
+            figure = px.scatter(self.df, x=col1, y=col2, trendline="ols", title=f"Correlation: {col1} vs {col2}", color_discrete_sequence=PALETTE_WARM)
         elif not c1_is_num and not c2_is_num:
-            figure = px.histogram(self.df, x=col1, color=col2, barmode="group", title=f"Relationship: {col1} vs {col2}", color_discrete_sequence=CUSTOM_PALETTE)
+            figure = px.histogram(self.df, x=col1, color=col2, barmode="group", title=f"Relationship: {col1} vs {col2}", color_discrete_sequence=PALETTE_WARM)
         else:
             num_var, cat_var = (col1, col2) if c1_is_num else (col2, col1)
-            figure = px.box(self.df, x=cat_var, y=num_var, points="all", color=cat_var, title=f"Distribution of {num_var} by {cat_var}", color_discrete_sequence=CUSTOM_PALETTE)
+            figure = px.box(self.df, x=cat_var, y=num_var, points="all", color=cat_var, title=f"Distribution of {num_var} by {cat_var}", color_discrete_sequence=PALETTE_WARM)
 
         figure.show()
 
@@ -547,7 +550,7 @@ class DataInspector:
         
         num_data = self.df.select_dtypes(include=[np.number])
         correlation_matrix = num_data.corr(method='pearson')
-        figure = px.imshow(correlation_matrix, text_auto=".2f", aspect="auto", color_continuous_scale=CUSTOM_CONTINUOUS,
+        figure = px.imshow(correlation_matrix, text_auto=".2f", aspect="auto", color_continuous_scale=CONTINUOUS_COOL,
                         title="Pearson Correlation Heatmap")
         figure.show()
 
@@ -605,7 +608,7 @@ class DataInspector:
             v_matrix,
             text_auto=".2f",
             aspect="auto",
-            color_continuous_scale=CUSTOM_CONTINUOUS,
+            color_continuous_scale=CONTINUOUS_WARM,
             title="<b>Cramér's V Categorical Association Heatmap</b>",
             labels=dict(color="Cramér's V")
         )
@@ -750,7 +753,7 @@ class DataInspector:
             unified_matrix,
             text_auto=".2f",
             aspect="auto",
-            color_continuous_scale=CUSTOM_CONTINUOUS,
+            color_continuous_scale=CONTINUOUS_MIXED,
             title="<b>Unified Association Heatmap (Numeric & Categorical)</b>",
             labels=dict(color="Association Strength")
         )
@@ -838,7 +841,7 @@ class PlottingMethods:
             except:
                 hover_data = hover_data.split(',') if ',' in hover_data else None
 
-        fig = px.bar(df_plt, x=x, y=y, color=color, title=title, text=text, hover_data=hover_data, barmode=barmode, color_discrete_sequence=CUSTOM_PALETTE)
+        fig = px.bar(df_plt, x=x, y=y, color=color, title=title, text=text, hover_data=hover_data, barmode=barmode, color_discrete_sequence=PALETTE_BLUES)
         raw_html = fig.to_html(full_html=False, include_plotlyjs=True)
         unique_div = raw_html.replace('<div>', f'<div id="{uuid.uuid4().hex[:8]}">')
         
@@ -901,7 +904,7 @@ class PlottingMethods:
             return {'status': 'error', 'response': {'meta_data': valid_res['message_dict'], 'data': json.dumps({'figure': ''})}, 'message': valid_res['message_dict'].get('message', 'Err')}
 
         df_plt = pd.DataFrame(valid_res['data'])
-        fig = px.pie(df_plt, names=names, values=values, title=title, hole=hole, color_discrete_sequence=CUSTOM_PALETTE)
+        fig = px.pie(df_plt, names=names, values=values, title=title, hole=hole, color_discrete_sequence=PALETTE_MIXED)
         
         raw_html = fig.to_html(full_html=False, include_plotlyjs=True)
         unique_div = raw_html.replace('<div>', f'<div id="{uuid.uuid4().hex[:8]}">')
@@ -931,7 +934,7 @@ class PlottingMethods:
         if bins:
             df_plt[x] = pd.cut(df_plt[x], bins=bins).astype(str)
             
-        fig = px.histogram(df_plt, x=x, title=title, color_discrete_sequence=CUSTOM_PALETTE)
+        fig = px.histogram(df_plt, x=x, title=title, color_discrete_sequence=PALETTE_PINKS)
         
         raw_html = fig.to_html(full_html=False, include_plotlyjs=True)
         unique_div = raw_html.replace('<div>', f'<div id="{uuid.uuid4().hex[:8]}">')
@@ -1002,7 +1005,7 @@ class PlottingMethods:
         df_plt = pd.DataFrame(valid_res['data'])
         pivot_df = pd.pivot_table(df_plt, values=values, index=index, columns=columns, aggfunc=aggregade_method, fill_value=fill_value)
         
-        fig = px.imshow(pivot_df, title=title, color_continuous_scale=CUSTOM_CONTINUOUS)
+        fig = px.imshow(pivot_df, title=title, color_continuous_scale=CONTINUOUS_WARM)
         if width: fig.update_layout(width=width)
         
         raw_html = fig.to_html(full_html=False, include_plotlyjs=True)
@@ -1020,7 +1023,7 @@ class PlottingMethods:
         df_plt = pd.DataFrame(valid_res['data'])
         melted_df = df_plt.melt(id_vars=[xLabel], value_vars=value_vars)
         
-        fig = px.bar(melted_df, x=xLabel, y='value', color='variable', barmode=barmode, title=title, color_discrete_sequence=CUSTOM_PALETTE)
+        fig = px.bar(melted_df, x=xLabel, y='value', color='variable', barmode=barmode, title=title, color_discrete_sequence=PALETTE_EARTH)
         
         raw_html = fig.to_html(full_html=False, include_plotlyjs=True)
         unique_div = raw_html.replace('<div>', f'<div id="{uuid.uuid4().hex[:8]}">')
