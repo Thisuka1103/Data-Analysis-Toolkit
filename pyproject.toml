@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "data_analysis"
 version = "0.1.0"
 authors = [
-  { name="Your Name", email="your.email@example.com" },
+  { name="Thisuka Sanvidu", email="tsanvidu53@gmail.com" },
 ]
 description = "A Modular Data Sanitization & Exploration Engine"
 readme = "README.md"
@@ -17,11 +17,8 @@ dependencies = [
     "plotly",
     "scipy",
     "scikit-learn",
-    "pydantic",
-    "networkx",
-    "graphviz",
     "ipython"
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/data-analysis-tool"
+"Homepage" = "https://github.com/Thisuka1103/Data-Analysis-Toolkit"
